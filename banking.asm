@@ -214,6 +214,26 @@ exit_program:
 ; ===========================
 ; PrintInt (preserves registers)
 ; ===========================
+
+; ===========================
+; PrintInt (preserves registers)
+; ===========================
+
+; ===========================
+; PrintInt (preserves registers)
+; ===========================
+
+; ===========================
+; PrintInt (preserves registers)
+; ===========================
+
+; ===========================
+; PrintInt (preserves registers)
+; ===========================
+
+; ===========================
+; PrintInt (preserves registers)
+; ===========================
 PrintInt PROC
     push rbx
     push rdi
