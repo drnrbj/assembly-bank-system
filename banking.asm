@@ -215,25 +215,6 @@ exit_program:
 ; PrintInt (preserves registers)
 ; ===========================
 
-; ===========================
-; PrintInt (preserves registers)
-; ===========================
-
-; ===========================
-; PrintInt (preserves registers)
-; ===========================
-
-; ===========================
-; PrintInt (preserves registers)
-; ===========================
-
-; ===========================
-; PrintInt (preserves registers)
-; ===========================
-
-; ===========================
-; PrintInt (preserves registers)
-; ===========================
 PrintInt PROC
     push rbx
     push rdi
@@ -301,13 +282,3 @@ Atoi ENDP
 
 main ENDP
 END
-
-; ===========================
-; PrintInt (preserves registers)
-; ===========================; ===========================
-; PrintInt (preserves registers)
-; ===========================; ===========================
-; PrintInt (preserves registers)
-; ===========================; ===========================
-; PrintInt (preserves registers)
-; ===========================
