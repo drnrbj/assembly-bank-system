@@ -1,4 +1,3 @@
-; banking.asm - Functional Banking System with better messages
 extrn GetStdHandle : PROC
 extrn WriteConsoleA : PROC
 extrn ReadConsoleA  : PROC
@@ -82,7 +81,7 @@ check_balance:
     lea r9, bytesWritten
     call WriteConsoleA
 
-    mov rax, balance
+    mov rax, qword ptr [balance]       ; ✅ FIXED
     call PrintInt
 
     mov rcx, rbx
@@ -93,47 +92,34 @@ check_balance:
 
     jmp menu_loop
 
+; ===========================
 deposit:
-    ; Ask for amount
     mov rcx, rbx
     lea rdx, enterAmountMsg
     mov r8, LENGTHOF enterAmountMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; Read input
     mov rcx, rsi
     lea rdx, inputBuffer
     mov r8, 10
     lea r9, bytesRead
     call ReadConsoleA
 
-    ; Convert ASCII -> integer
     lea rcx, inputBuffer
     call Atoi
 
-    ; Add to balance
-    add balance, rax
+    add qword ptr [balance], rax       ; ✅ FIXED memory access
 
-    ; Print message
     mov rcx, rbx
     lea rdx, depositMsg
     mov r8, LENGTHOF depositMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; Print balance
-    mov rax, balance
+    mov rax, qword ptr [balance]       ; ✅ FIXED
     call PrintInt
 
-    ; Newline for clarity
-    mov rcx, rbx
-    lea rdx, newline
-    mov r8, LENGTHOF newline - 1
-    lea r9, bytesWritten
-    call WriteConsoleA
-
-    ; Add another newline for readability
     mov rcx, rbx
     lea rdx, newline
     mov r8, LENGTHOF newline - 1
@@ -142,51 +128,38 @@ deposit:
 
     jmp menu_loop
 
-
+; ===========================
 withdraw:
-    ; Ask for amount
     mov rcx, rbx
     lea rdx, enterAmountMsg
     mov r8, LENGTHOF enterAmountMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; Read input
     mov rcx, rsi
     lea rdx, inputBuffer
     mov r8, 10
     lea r9, bytesRead
     call ReadConsoleA
 
-    ; Convert ASCII -> integer
     lea rcx, inputBuffer
     call Atoi
+    mov rdx, rax                      ; amount
 
-    ; Check if enough balance
-    mov rdx, rax
-    mov rax, balance
+    mov rax, qword ptr [balance]      ; ✅ FIXED
     cmp rax, rdx
     jb insufficient
 
-    sub balance, rdx
+    sub qword ptr [balance], rdx      ; ✅ FIXED
 
-    ; Print message
     mov rcx, rbx
     lea rdx, withdrawMsg
     mov r8, LENGTHOF withdrawMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; Print balance
-    mov rax, balance
+    mov rax, qword ptr [balance]      ; ✅ FIXED
     call PrintInt
-
-    ; Newlines for spacing
-    mov rcx, rbx
-    lea rdx, newline
-    mov r8, LENGTHOF newline - 1
-    lea r9, bytesWritten
-    call WriteConsoleA
 
     mov rcx, rbx
     lea rdx, newline
@@ -196,6 +169,7 @@ withdraw:
 
     jmp menu_loop
 
+; ===========================
 insufficient:
     mov rcx, rbx
     lea rdx, insufficientMsg
@@ -210,9 +184,6 @@ exit_program:
     ret
 
 ; ===========================
-; PrintInt (preserves registers)
-; ===========================
-
 PrintInt PROC
     push rbx
     push rdi
@@ -252,9 +223,6 @@ convert_loop:
 PrintInt ENDP
 
 ; ===========================
-; Atoi — convert ASCII to int
-; ===========================
-
 Atoi PROC
     xor rax, rax
     xor rbx, rbx
@@ -281,4 +249,3 @@ Atoi ENDP
 
 main ENDP
 END
-
