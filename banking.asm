@@ -301,3 +301,13 @@ Atoi ENDP
 
 main ENDP
 END
+
+; ===========================
+; PrintInt (preserves registers)
+; ===========================; ===========================
+; PrintInt (preserves registers)
+; ===========================; ===========================
+; PrintInt (preserves registers)
+; ===========================; ===========================
+; PrintInt (preserves registers)
+; ===========================
