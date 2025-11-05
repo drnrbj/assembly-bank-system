@@ -1,12 +1,18 @@
+; ======================================================
+; banking.asm - Enhanced Simple Banking System (x64 MASM)
+; ======================================================
+
 extrn GetStdHandle : PROC
 extrn WriteConsoleA : PROC
 extrn ReadConsoleA  : PROC
 
 STD_INPUT_HANDLE  equ -10
 STD_OUTPUT_HANDLE equ -11
+MAX_INPUT         equ 32
 
 .data
-menuMsg db "==== Simple Banking System ====",13,10,\
+; ---------- Menu and Messages ----------
+menuMsg db 13,10,"==== Simple Banking System ====",13,10,\
          "1. Check Balance",13,10,\
          "2. Deposit",13,10,\
          "3. Withdraw",13,10,\
@@ -19,19 +25,24 @@ insufficientMsg db 13,10,"Insufficient funds!",13,10,0
 balanceMsg db 13,10,"Your balance is: P",0
 depositMsg db 13,10,"Current balance after deposit: P",0
 withdrawMsg db 13,10,"Current balance after withdrawal: P",0
+depositSuccess db 13,10,"Deposit successful!",13,10,0
+withdrawSuccess db 13,10,"Withdrawal successful!",13,10,0
+pauseMsg db 13,10,"Press Enter to continue...",13,10,0
+lineSep db "----------------------------------------",13,10,0
 newline db 13,10,0
 
+; ---------- Variables ----------
 balance dq 1000
 bytesRead dq ?
 bytesWritten dq ?
-inputBuffer db 32 dup(0)
+inputBuffer db MAX_INPUT dup(0)
 numBuffer db 32 dup(0)
 
 .code
 main PROC
     sub rsp, 40
 
-    ; get console handles
+    ; Get console handles
     mov rcx, STD_OUTPUT_HANDLE
     call GetStdHandle
     mov rbx, rax
@@ -40,15 +51,23 @@ main PROC
     call GetStdHandle
     mov rsi, rax
 
+; =====================================================
 menu_loop:
-    ; show menu
+    ; Add spacing before menu
+    mov rcx, rbx
+    lea rdx, newline
+    mov r8, LENGTHOF newline - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
+
+    ; Show menu
     mov rcx, rbx
     lea rdx, menuMsg
     mov r8, LENGTHOF menuMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; read input
+    ; Read user choice
     mov rcx, rsi
     lea rdx, inputBuffer
     mov r8, 10
@@ -71,17 +90,24 @@ invalid_option:
     mov r8, LENGTHOF invalidMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
+    call WaitForEnter
     jmp menu_loop
 
-; ===========================
+; =====================================================
 check_balance:
+    mov rcx, rbx
+    lea rdx, lineSep
+    mov r8, LENGTHOF lineSep - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
+
     mov rcx, rbx
     lea rdx, balanceMsg
     mov r8, LENGTHOF balanceMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    mov rax, qword ptr [balance]       ; ✅ FIXED
+    mov rax, qword ptr [balance]
     call PrintInt
 
     mov rcx, rbx
@@ -90,9 +116,16 @@ check_balance:
     lea r9, bytesWritten
     call WriteConsoleA
 
+    lea rdx, lineSep
+    mov rcx, rbx
+    mov r8, LENGTHOF lineSep - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
+
+    call WaitForEnter
     jmp menu_loop
 
-; ===========================
+; =====================================================
 deposit:
     mov rcx, rbx
     lea rdx, enterAmountMsg
@@ -109,7 +142,16 @@ deposit:
     lea rcx, inputBuffer
     call Atoi
 
-    add qword ptr [balance], rax       ; ✅ FIXED memory access
+    cmp rax, 0
+    jle invalid_deposit
+
+    add qword ptr [balance], rax
+
+    mov rcx, rbx
+    lea rdx, depositSuccess
+    mov r8, LENGTHOF depositSuccess - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
 
     mov rcx, rbx
     lea rdx, depositMsg
@@ -117,7 +159,7 @@ deposit:
     lea r9, bytesWritten
     call WriteConsoleA
 
-    mov rax, qword ptr [balance]       ; ✅ FIXED
+    mov rax, qword ptr [balance]
     call PrintInt
 
     mov rcx, rbx
@@ -126,9 +168,19 @@ deposit:
     lea r9, bytesWritten
     call WriteConsoleA
 
+    call WaitForEnter
     jmp menu_loop
 
-; ===========================
+invalid_deposit:
+    mov rcx, rbx
+    lea rdx, invalidMsg
+    mov r8, LENGTHOF invalidMsg - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
+    call WaitForEnter
+    jmp menu_loop
+
+; =====================================================
 withdraw:
     mov rcx, rbx
     lea rdx, enterAmountMsg
@@ -144,13 +196,22 @@ withdraw:
 
     lea rcx, inputBuffer
     call Atoi
-    mov rdx, rax                      ; amount
+    mov rdx, rax    ; amount
 
-    mov rax, qword ptr [balance]      ; ✅ FIXED
+    cmp rdx, 0
+    jle invalid_withdraw
+
+    mov rax, qword ptr [balance]
     cmp rax, rdx
     jb insufficient
 
-    sub qword ptr [balance], rdx      ; ✅ FIXED
+    sub qword ptr [balance], rdx
+
+    mov rcx, rbx
+    lea rdx, withdrawSuccess
+    mov r8, LENGTHOF withdrawSuccess - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
 
     mov rcx, rbx
     lea rdx, withdrawMsg
@@ -158,7 +219,7 @@ withdraw:
     lea r9, bytesWritten
     call WriteConsoleA
 
-    mov rax, qword ptr [balance]      ; ✅ FIXED
+    mov rax, qword ptr [balance]
     call PrintInt
 
     mov rcx, rbx
@@ -167,23 +228,36 @@ withdraw:
     lea r9, bytesWritten
     call WriteConsoleA
 
+    call WaitForEnter
     jmp menu_loop
 
-; ===========================
+invalid_withdraw:
+    mov rcx, rbx
+    lea rdx, invalidMsg
+    mov r8, LENGTHOF invalidMsg - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
+    call WaitForEnter
+    jmp menu_loop
+
+; =====================================================
 insufficient:
     mov rcx, rbx
     lea rdx, insufficientMsg
     mov r8, LENGTHOF insufficientMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
+    call WaitForEnter
     jmp menu_loop
 
-; ===========================
+; =====================================================
 exit_program:
     add rsp, 40
     ret
 
-; ===========================
+; =====================================================
+; PrintInt — prints integer in RAX
+; =====================================================
 PrintInt PROC
     push rbx
     push rdi
@@ -222,7 +296,9 @@ convert_loop:
     ret
 PrintInt ENDP
 
-; ===========================
+; =====================================================
+; Atoi — convert ASCII to integer
+; =====================================================
 Atoi PROC
     xor rax, rax
     xor rbx, rbx
@@ -246,6 +322,24 @@ next_digit:
 done:
     ret
 Atoi ENDP
+
+; =====================================================
+; WaitForEnter — pauses until Enter key
+; =====================================================
+WaitForEnter PROC
+    mov rcx, rbx
+    lea rdx, pauseMsg
+    mov r8, LENGTHOF pauseMsg - 1
+    lea r9, bytesWritten
+    call WriteConsoleA
+
+    mov rcx, rsi
+    lea rdx, inputBuffer
+    mov r8, 10
+    lea r9, bytesRead
+    call ReadConsoleA
+    ret
+WaitForEnter ENDP
 
 main ENDP
 END
