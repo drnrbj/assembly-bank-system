@@ -1,7 +1,3 @@
-; ======================================================
-; banking.asm - Enhanced Simple Banking System (x64 MASM)
-; ======================================================
-
 extrn GetStdHandle : PROC
 extrn WriteConsoleA : PROC
 extrn ReadConsoleA  : PROC
@@ -11,7 +7,7 @@ STD_OUTPUT_HANDLE equ -11
 MAX_INPUT         equ 32
 
 .data
-; ---------- Menu and Messages ----------
+
 menuMsg db 13,10,"==== Simple Banking System ====",13,10,\
          "1. Check Balance",13,10,\
          "2. Deposit",13,10,\
@@ -31,7 +27,6 @@ pauseMsg db 13,10,"Press Enter to continue...",13,10,0
 lineSep db "----------------------------------------",13,10,0
 newline db 13,10,0
 
-; ---------- Variables ----------
 balance dq 1000
 bytesRead dq ?
 bytesWritten dq ?
@@ -42,7 +37,6 @@ numBuffer db 32 dup(0)
 main PROC
     sub rsp, 40
 
-    ; Get console handles
     mov rcx, STD_OUTPUT_HANDLE
     call GetStdHandle
     mov rbx, rax
@@ -51,23 +45,19 @@ main PROC
     call GetStdHandle
     mov rsi, rax
 
-; =====================================================
 menu_loop:
-    ; Add spacing before menu
     mov rcx, rbx
     lea rdx, newline
     mov r8, LENGTHOF newline - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; Show menu
     mov rcx, rbx
     lea rdx, menuMsg
     mov r8, LENGTHOF menuMsg - 1
     lea r9, bytesWritten
     call WriteConsoleA
 
-    ; Read user choice
     mov rcx, rsi
     lea rdx, inputBuffer
     mov r8, 10
@@ -93,7 +83,6 @@ invalid_option:
     call WaitForEnter
     jmp menu_loop
 
-; =====================================================
 check_balance:
     mov rcx, rbx
     lea rdx, lineSep
@@ -125,7 +114,6 @@ check_balance:
     call WaitForEnter
     jmp menu_loop
 
-; =====================================================
 deposit:
     mov rcx, rbx
     lea rdx, enterAmountMsg
@@ -180,8 +168,6 @@ invalid_deposit:
     call WaitForEnter
     jmp menu_loop
 
-; =====================================================
-
 withdraw:
     mov rcx, rbx
     lea rdx, enterAmountMsg
@@ -197,7 +183,7 @@ withdraw:
 
     lea rcx, inputBuffer
     call Atoi
-    mov rdx, rax    ; amount
+    mov rdx, rax 
 
     cmp rdx, 0
     jle invalid_withdraw
@@ -241,7 +227,6 @@ invalid_withdraw:
     call WaitForEnter
     jmp menu_loop
 
-; =====================================================
 insufficient:
     mov rcx, rbx
     lea rdx, insufficientMsg
@@ -251,12 +236,9 @@ insufficient:
     call WaitForEnter
     jmp menu_loop
 
-; =====================================================
 exit_program:
     add rsp, 40
     ret
-
-; =====================================================
 
 PrintInt PROC
     push rbx
@@ -296,9 +278,6 @@ convert_loop:
     ret
 PrintInt ENDP
 
-; =====================================================
-; Atoi — convert ASCII to integer
-; =====================================================
 Atoi PROC
     xor rax, rax
     xor rbx, rbx
@@ -322,10 +301,6 @@ next_digit:
 done:
     ret
 Atoi ENDP
-
-; =====================================================
-; WaitForEnter — pauses until Enter key
-; =====================================================
 
 WaitForEnter PROC
     mov rcx, rbx
