@@ -82,7 +82,7 @@ invalid_option:
     call WriteConsoleA
     call WaitForEnter
     jmp menu_loop
-
+;;;;;;;;;;;;;;;;;;;;;;;;
 check_balance:
     mov rcx, rbx
     lea rdx, lineSep
